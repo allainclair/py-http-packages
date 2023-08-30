@@ -1,13 +1,18 @@
 [project]
 name = "py-http-packages"
-version = ""
+version = "0.0.1"
 description = "Python HTTP packages comparison"
 authors = [
     {name = "Allainclair Flausino dos Santos", email = "allainclair@gmail.com"},
 ]
 dependencies = [
     "httpx>=0.24.1",
+    "requests>=2.31.0",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
 license = {text = "MIT"}
+
+[tool.pdm.scripts]
+start-server = "python -m http.server 9001"
+test-it = "python -m src.compare_httpx"

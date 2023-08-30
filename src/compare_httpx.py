@@ -1,10 +1,10 @@
-from asyncio import run, gather
-from sys import argv
+from asyncio import run
 from httpx import AsyncClient
 from time import perf_counter
+from requests import Session
 
 URL = "http://0.0.0.0:9001"
-N_REQUESTS = 10_000
+N_REQUESTS = 5000
 
 global_connection: AsyncClient | None = None
 
@@ -17,7 +17,7 @@ async def global_connection_test() -> None:
         client = _get_global_connection()
         responses.append(await client.get(URL))
 
-    print(f"global_connection time {perf_counter()-start}s for {len(responses)} requests")
+    print(f"global_connection time {perf_counter()-start:.2f}s for {len(responses)} requests")
 
 
 async def no_global_connection_test() -> None:
@@ -28,7 +28,17 @@ async def no_global_connection_test() -> None:
         async with AsyncClient() as client:
             responses.append(await client.get(URL))
 
-    print(f"no_global_connection time {perf_counter()-start}s for {len(responses)} requests")
+    print(f"no_global_connection time {perf_counter()-start:.2f}s for {len(responses)} requests")
+
+
+def session_test() -> None:
+    session = Session()
+    start = perf_counter()
+    responses = []
+    for _ in range(N_REQUESTS):
+        responses.append(session.get(URL))
+
+    print(f"Request Session time {perf_counter() - start:.2f}s for {len(responses)} requests")
 
 
 async def main() -> None:
@@ -56,3 +66,4 @@ async def _close_global_connection() -> AsyncClient:
 
 if __name__ == "__main__":
     run(main())
+    session_test()
