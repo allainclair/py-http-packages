@@ -1,12 +1,14 @@
 """Simulate many consecutive requests to a URL with different HTTP request modules."""
-from asyncio import run
+from asyncio import run, gather, ensure_future
 from aiohttp import ClientSession
-from httpx import AsyncClient
+from httpx import AsyncClient, Limits
 from time import perf_counter
 from requests import Session
 
 URL = "http://0.0.0.0:9001"
 N_REQUESTS = 5000
+
+limits = Limits(max_connections=N_REQUESTS)
 
 global_connection: AsyncClient | None = None
 
@@ -33,6 +35,15 @@ async def no_global_connection_test() -> None:
     print(f"httpx no_global_connection time {perf_counter()-start:.2f}s on {len(responses)} requests")
 
 
+async def no_global_connection_gather_test() -> None:
+    start = perf_counter()
+    async with AsyncClient(limits=limits) as client:
+        requests = [client.get(URL) for _ in range(N_REQUESTS)]
+        responses = await gather(*requests)
+
+    print(f"httpx no_global_connection gather time {perf_counter()-start:.2f}s on {len(responses)} requests")
+
+
 async def aiohttp_() -> None:
     start = perf_counter()
     responses = []
@@ -42,6 +53,16 @@ async def aiohttp_() -> None:
                 responses.append(await response.text())
 
     print(f"aiohttp time {perf_counter() - start:.2f}s on {len(responses)} requests")
+
+
+async def aiohttp_gather() -> None:
+    start = perf_counter()
+    async with ClientSession() as session:
+        async with session.get(URL) as response:
+            request_texts = [response.text() for _ in range(1_000_000)]  # Big number of requests.
+            responses = await gather(*request_texts)
+
+    print(f"aiohttp gather time {perf_counter() - start:.2f}s on {len(responses)} requests")
 
 
 def request_session_test() -> None:
@@ -60,11 +81,14 @@ async def main() -> None:
     await _close_global_connection()
     await aiohttp_()
 
+    await no_global_connection_gather_test()
+    await aiohttp_gather()
+
 
 def _get_global_connection() -> AsyncClient:
     global global_connection
     if global_connection is None:
-        global_connection = AsyncClient()
+        global_connection = AsyncClient(limits=limits)
         return global_connection
 
     return global_connection
@@ -80,4 +104,4 @@ async def _close_global_connection() -> AsyncClient:
 
 if __name__ == "__main__":
     run(main())
-    request_session_test()
+    # request_session_test()
