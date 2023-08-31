@@ -78,11 +78,12 @@ def request_session_test() -> None:
 async def main() -> None:
     await global_connection_test()
     await no_global_connection_test()
-    await _close_global_connection()
     await aiohttp_()
 
     await no_global_connection_gather_test()
     await aiohttp_gather()
+
+    await _close_global_connection()
 
 
 def _get_global_connection() -> AsyncClient:
