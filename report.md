@@ -1,5 +1,14 @@
-global_connection time 5.01s for 5000 requests
+## Comparison among HTTP packages:
+* httpx with global and non-global connection
+* requests.Session
+* aiohttp
 
-no_global_connection time 85.69s for 5000 requests
+## Results
 
-Request Session time 11.83s for 5000 requests
+aiohttp time 2.93s on 5000 requests
+
+httpx global_connection time 5.02s on 5000 requests
+
+Request Session time 9.66s on 5000 requests
+
+httpx no_global_connection time 87.38s on 5000 requests

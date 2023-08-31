@@ -1,4 +1,6 @@
+"""Simulate many consecutive requests to a URL with different HTTP request modules."""
 from asyncio import run
+from aiohttp import ClientSession
 from httpx import AsyncClient
 from time import perf_counter
 from requests import Session
@@ -10,41 +12,53 @@ global_connection: AsyncClient | None = None
 
 
 async def global_connection_test() -> None:
-    """Simulate consecutive N_REQUESTS to the URL with a global AsyncClient."""
+    """Global AsyncClient."""
     start = perf_counter()
     responses = []
     for _ in range(N_REQUESTS):
         client = _get_global_connection()
         responses.append(await client.get(URL))
 
-    print(f"global_connection time {perf_counter()-start:.2f}s for {len(responses)} requests")
+    print(f"httpx global_connection time {perf_counter()-start:.2f}s on {len(responses)} requests")
 
 
 async def no_global_connection_test() -> None:
-    """Simulate consecutive N_REQUESTS to the URL creating a new AsyncClient."""
+    """Creating always a new AsyncClient."""
     start = perf_counter()
     responses = []
     for _ in range(N_REQUESTS):
         async with AsyncClient() as client:
             responses.append(await client.get(URL))
 
-    print(f"no_global_connection time {perf_counter()-start:.2f}s for {len(responses)} requests")
+    print(f"httpx no_global_connection time {perf_counter()-start:.2f}s on {len(responses)} requests")
 
 
-def session_test() -> None:
+async def aiohttp_() -> None:
+    start = perf_counter()
+    responses = []
+    async with ClientSession() as session:
+        for _ in range(N_REQUESTS):
+            async with session.get(URL) as response:
+                responses.append(await response.text())
+
+    print(f"aiohttp time {perf_counter() - start:.2f}s on {len(responses)} requests")
+
+
+def request_session_test() -> None:
     session = Session()
     start = perf_counter()
     responses = []
     for _ in range(N_REQUESTS):
         responses.append(session.get(URL))
 
-    print(f"Request Session time {perf_counter() - start:.2f}s for {len(responses)} requests")
+    print(f"Request Session time {perf_counter() - start:.2f}s on {len(responses)} requests")
 
 
 async def main() -> None:
     await global_connection_test()
     await no_global_connection_test()
     await _close_global_connection()
+    await aiohttp_()
 
 
 def _get_global_connection() -> AsyncClient:
@@ -66,4 +80,4 @@ async def _close_global_connection() -> AsyncClient:
 
 if __name__ == "__main__":
     run(main())
-    session_test()
+    request_session_test()
