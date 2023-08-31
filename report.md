@@ -1,26 +1,26 @@
 ## Comparison among HTTP packages:
 * httpx with global and non-global connection
-* requests.Session
 * aiohttp
+* requests.Session
 
 ## Results
 
-### aiohttp time 2.93s on 5,000 requests
+### aiohttp time 2.93s on 5,000 consecutive requests.
 
-### httpx global_connection time 5.02s on 5,000 requests
+### httpx global connection time 5.02s on consecutive 5,000 requests
 
-### Request Session time 9.66s on 5,000 requests
+### Request Session time 9.66s on consecutive 5,000 requests
 
-### httpx no_global_connection gather time 32.13s on 5,000 requests
+### httpx no global connection time 32.13s on async (with [gather](https://docs.python.org/3/library/asyncio-task.html#asyncio.gather)) 5,000 requests
 I don't know why httpx does not perform well with gather. Global connection also had the same
 performance. It is very strange to be worse than global_connection.
 
 * It may be related to local client-server test, and the response is small.
 * It may be other reasons.
 
-### httpx no_global_connection time 87.38s on 5,000 requests
+### httpx no global connection time 87.38s on consecutive 5,000 requests
 
-### aiohttp gather time 8.17s on 1,000,000 requests!!
+### aiohttp [gather](https://docs.python.org/3/library/asyncio-task.html#asyncio.gather) time 8.17s on 1,000,000 requests!
 
 ## Conclusion
 
