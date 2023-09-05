@@ -1,5 +1,6 @@
-# py-http-packages
-Python HTTP packages comparison
+# Python HTTP packages comparison
+
+There are alternatives to making HTTP calls. Here, we make a simple comparison among some approaches.
 
 ## Instructions
 
