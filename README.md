@@ -19,3 +19,7 @@ Install [pyenv](https://github.com/pyenv/pyenv) (if you want it) and [PDM](https
 ## References
 
 https://www.digitalocean.com/community/tutorials/python-simplehttpserver-http-server
+
+## Todo
+
+Can we create a global connection experiment for aiohttp?
