@@ -13,18 +13,30 @@ limits = Limits(max_connections=N_REQUESTS)
 global_connection: AsyncClient | None = None
 
 
-async def global_connection_test() -> None:
+async def main() -> None:
+    # await httpx_global_connection_test()
+    # await httpx_no_global_connection_test()
+    # await aiohttp_session_test()
+    # await aiohttp_no_session_test()
+
+    await httpx_no_global_connection_gather_test()
+    # await aiohttp_gather()
+
+    await _close_httpx_connection()
+
+
+async def httpx_global_connection_test() -> None:
     """Global AsyncClient."""
     start = perf_counter()
     responses = []
     for _ in range(N_REQUESTS):
-        client = _get_global_connection()
+        client = _get_httpx_connection()
         responses.append(await client.get(URL))
 
-    print(f"httpx global_connection time {perf_counter()-start:.2f}s on {len(responses)} requests")
+    print(f"httpx global connection time {perf_counter()-start:.2f}s on {len(responses)} requests")
 
 
-async def no_global_connection_test() -> None:
+async def httpx_no_global_connection_test() -> None:
     """Creating always a new AsyncClient."""
     start = perf_counter()
     responses = []
@@ -32,19 +44,19 @@ async def no_global_connection_test() -> None:
         async with AsyncClient() as client:
             responses.append(await client.get(URL))
 
-    print(f"httpx no_global_connection time {perf_counter()-start:.2f}s on {len(responses)} requests")
+    print(f"httpx no global connection time {perf_counter()-start:.2f}s on {len(responses)} requests")
 
 
-async def no_global_connection_gather_test() -> None:
+async def httpx_no_global_connection_gather_test() -> None:
     start = perf_counter()
     async with AsyncClient(limits=limits) as client:
         requests = [client.get(URL) for _ in range(N_REQUESTS)]
         responses = await gather(*requests)
 
-    print(f"httpx no_global_connection gather time {perf_counter()-start:.2f}s on {len(responses)} requests")
+    print(f"httpx no global connection gather time {perf_counter()-start:.2f}s on {len(responses)} requests")
 
 
-async def aiohttp_() -> None:
+async def aiohttp_session_test() -> None:
     start = perf_counter()
     responses = []
     async with ClientSession() as session:
@@ -52,7 +64,18 @@ async def aiohttp_() -> None:
             async with session.get(URL) as response:
                 responses.append(await response.text())
 
-    print(f"aiohttp time {perf_counter() - start:.2f}s on {len(responses)} requests")
+    print(f"aiohttp session time {perf_counter() - start:.2f}s on {len(responses)} requests")
+
+
+async def aiohttp_no_session_test() -> None:
+    start = perf_counter()
+    responses = []
+    for _ in range(N_REQUESTS):
+        async with ClientSession() as session:
+            async with session.get(URL) as response:
+                responses.append(await response.text())
+
+    print(f"aiohttp no session time {perf_counter() - start:.2f}s on {len(responses)} requests")
 
 
 async def aiohttp_gather() -> None:
@@ -75,18 +98,7 @@ def request_session_test() -> None:
     print(f"Request Session time {perf_counter() - start:.2f}s on {len(responses)} requests")
 
 
-async def main() -> None:
-    await global_connection_test()
-    await no_global_connection_test()
-    await aiohttp_()
-
-    await no_global_connection_gather_test()
-    await aiohttp_gather()
-
-    await _close_global_connection()
-
-
-def _get_global_connection() -> AsyncClient:
+def _get_httpx_connection() -> AsyncClient:
     global global_connection
     if global_connection is None:
         global_connection = AsyncClient(limits=limits)
@@ -95,10 +107,11 @@ def _get_global_connection() -> AsyncClient:
     return global_connection
 
 
-async def _close_global_connection() -> AsyncClient:
+async def _close_httpx_connection() -> None:
     global global_connection
     if global_connection is not None:
         await global_connection.aclose()
+        global_connection = None
 
     return global_connection
 
