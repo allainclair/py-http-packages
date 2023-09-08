@@ -14,12 +14,12 @@ global_connection: AsyncClient | None = None
 
 
 async def main() -> None:
-    # await httpx_global_connection_test()
-    # await httpx_no_global_connection_test()
-    # await aiohttp_session_test()
-    # await aiohttp_no_session_test()
+    await httpx_global_connection_test()
+    await httpx_no_global_connection_test()
+    await aiohttp_session_test()
+    await aiohttp_no_session_test()
 
-    await httpx_no_global_connection_gather_test()
+    # await httpx_no_global_connection_gather_test()
     # await aiohttp_gather()
 
     await _close_httpx_connection()
