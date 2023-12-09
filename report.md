@@ -1,3 +1,10 @@
+## Update 2023-12-09
+
+Found why HTTPX is much worse on creating an AsyncClient, it is related to
+[TLS](https://en.wikipedia.org/wiki/Transport_Layer_Security). If
+we pass a flag `AsyncClient(verify=False)` we reduce significantly the request time: 
+https://github.com/encode/httpx/issues/838
+
 ## Comparison among HTTP packages:
 * httpx with global and non-global connection
 * aiohttp with "global" and "non-global" ClientSession

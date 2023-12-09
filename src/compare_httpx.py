@@ -16,7 +16,7 @@ global_connection: AsyncClient | None = None
 async def main() -> None:
     await httpx_global_connection_test()
     await httpx_no_global_connection_test()
-    await aiohttp_session_test()
+    # await aiohttp_session_test()
     await aiohttp_no_session_test()
 
     # await httpx_no_global_connection_gather_test()
@@ -41,7 +41,7 @@ async def httpx_no_global_connection_test() -> None:
     start = perf_counter()
     responses = []
     for _ in range(N_REQUESTS):
-        async with AsyncClient() as client:
+        async with AsyncClient(verify=False) as client:
             responses.append(await client.get(URL))
 
     print(f"httpx no global connection time {perf_counter()-start:.2f}s on {len(responses)} requests")

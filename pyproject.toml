@@ -15,5 +15,5 @@ readme = "README.md"
 license = {text = "MIT"}
 
 [tool.pdm.scripts]
-server = "bash -c 'cd serve_dir && python -m http.server 9001'"
+server = "bash -c 'cd serve_dir && python -m http.server 9001 > /dev/null 2>&1'"
 test-it = "python -m src.compare_httpx"
